@@ -1,13 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
 using System.Management;
+using System.ServiceProcess;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
 
 public class ServerInfoService
 {
+    public Task<List<ServiceInfo>> GetServicesAsync()
+    {
+        return Task.Run(() =>
+        {
+            var servicesList = new List<ServiceInfo>();
+            ServiceController[] services = ServiceController.GetServices();
+
+            foreach (var service in services)
+            {
+                servicesList.Add(new ServiceInfo
+                {
+                    ServiceName = service.ServiceName,
+                    DisplayName = service.DisplayName,
+                    Status = service.Status.ToString()
+                });
+            }
+
+            return servicesList;
+        });
+    }
+
     public Task<List<Port>> GetNetStatPortsAsync()
     {
         var ports = new List<Port>();

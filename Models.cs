@@ -17,7 +17,7 @@ public class Hotfix
 {
     public string HotfixID { get; set; }
     public string Description { get; set; }
-    public string InstalledOn { get; set; } // Make sure this property is defined
+    public string InstalledOn { get; set; }
 }
 public class LogicalDisk
 {
@@ -37,6 +37,11 @@ public class Port
     public string port_number { get; set; }
     public string process_name { get; set; }
     public string protocol { get; set; }
-
     public string name => $"{process_name} ({protocol} port {port_number})";
+}
+public class ServiceInfo
+{
+    public string ServiceName { get; set; }
+    public string DisplayName { get; set; }
+    public string Status { get; set; }
 }

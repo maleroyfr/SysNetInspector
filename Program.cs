@@ -33,9 +33,12 @@ class Program
                     await DisplayNetworkConnections();
                     break;
                 case "7":
+                    await DisplayServicesInformation();
+                    break; // This break was missing, causing fall-through to case "8"
+                case "8":
                     await ExportAllInformationToXML();
                     break;
-                case "8":
+                case "9":
                     Console.WriteLine("Exiting...");
                     return;
                 default:
@@ -47,6 +50,7 @@ class Program
         }
     }
 
+
     static void DisplayMenu()
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
@@ -57,8 +61,9 @@ class Program
         Console.WriteLine("4. Display Network Interface Information");
         Console.WriteLine("5. Display Installed Applications");
         Console.WriteLine("6. Display Network Connections");
-        Console.WriteLine("7. Export All Information to XML");
-        Console.WriteLine("8. Exit");
+        Console.WriteLine("7. Display Services Information");
+        Console.WriteLine("8. Export All Information to XML");
+        Console.WriteLine("9. Exit");
         Console.ResetColor();
         Console.Write("\nSelect an option: ");
     }
@@ -75,6 +80,17 @@ class Program
         Console.WriteLine($"CPU Info: {serverInfo.CPUInfo}");
         Console.WriteLine($"Installed Memory: {serverInfo.InstalledMemory}");
         Console.WriteLine($"Last System Boot Time: {serverInfo.LastSystemBootTime}");
+        Console.ResetColor();
+    }
+    static async Task DisplayServicesInformation()
+    {
+        var services = await service.GetServicesAsync();
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.WriteLine("\n[Windows Services]");
+        foreach (var svc in services)
+        {
+            Console.WriteLine($"Service Name: {svc.ServiceName}, Display Name: {svc.DisplayName}, Status: {svc.Status}");
+        }
         Console.ResetColor();
     }
 
@@ -144,40 +160,49 @@ class Program
 
     static async Task ExportAllInformationToXML()
     {
-        Console.WriteLine("Exporting all information to XML...");
+        Console.WriteLine("Starting the export of all information to XML...");
+
+        // Prepare common filename components
+        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string serverName = Environment.MachineName;
 
         // Export Server Information
         var serverInfo = await service.GetServerInfoAsync();
-        XmlExporter.ExportToXml(serverInfo, "ServerInfo.xml");
+        XmlExporter.ExportToXml(serverInfo, $"{serverName}_ServerInfo_{timestamp}.xml");
         Console.WriteLine("Server Information exported.");
 
         // Export Installed Hotfixes
         var hotfixes = await service.GetHotfixesAsync();
-        XmlExporter.ExportToXml(hotfixes, "Hotfixes.xml");
+        XmlExporter.ExportToXml(hotfixes, $"{serverName}_InstalledHotfixes_{timestamp}.xml");
         Console.WriteLine("Installed Hotfixes exported.");
 
         // Export Logical Disks Information
         var disks = await service.GetLogicalDisksAsync();
-        XmlExporter.ExportToXml(disks, "LogicalDisks.xml");
+        XmlExporter.ExportToXml(disks, $"{serverName}_LogicalDisks_{timestamp}.xml");
         Console.WriteLine("Logical Disks Information exported.");
 
         // Export Network Interfaces Information
         var interfaces = await service.GetNetworkInterfacesAsync();
-        XmlExporter.ExportToXml(interfaces, "NetworkInterfaces.xml");
+        XmlExporter.ExportToXml(interfaces, $"{serverName}_NetworkInterfaces_{timestamp}.xml");
         Console.WriteLine("Network Interfaces Information exported.");
 
         // Export Installed Applications
         var applications = await service.GetInstalledSoftwareAsync();
-        XmlExporter.ExportToXml(applications, "InstalledApplications.xml");
+        XmlExporter.ExportToXml(applications, $"{serverName}_InstalledApplications_{timestamp}.xml");
         Console.WriteLine("Installed Applications exported.");
 
         // Export Network Connections
         var networkConnections = await service.GetNetStatPortsAsync();
-        XmlExporter.ExportToXml(networkConnections, "NetworkConnections.xml");
+        XmlExporter.ExportToXml(networkConnections, $"{serverName}_NetworkConnections_{timestamp}.xml");
         Console.WriteLine("Network Connections exported.");
 
+        // Export Windows Services
+        var services = await service.GetServicesAsync();
+        XmlExporter.ExportToXml(services, $"{serverName}_WindowsServices_{timestamp}.xml");
+        Console.WriteLine("Windows Services exported.");
+
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine("All information has been successfully exported to XML.");
+        Console.WriteLine("All information has been successfully exported to XML files.");
         Console.ResetColor();
     }
 
